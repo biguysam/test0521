@@ -17,7 +17,7 @@ etf56 <- read.table("Backtesting-master/0056-2007-2019.txt", sep = ',' ,header =
 #etf56 <- read.csv("tw0056_20070101_20191231.csv", header = TRUE)
 #etf50 <- read.table("tw50_20030630_20181231.txt", header = TRUE)
 etf56 <- etf56[c(3, 7)]
-colnames(etf56) <- c("date", "tw56")
+colnames(etf56) <- c("date", "price")
 head(etf56)
 tail(etf56)
 str(etf56)
@@ -26,15 +26,17 @@ sum(is.na(etf56$price))
 # convert to time series data
 # library(lubridate)
 # etf50.xts <- xts(etf50$tw50, order.by = ymd(as.character(etf50$date)))
-etf56.xts <- xts(etf56$tw56, order.by = as.Date(as.character(etf56$date), format = "%Y%m%d"))
+#轉換為時間序列的資料 xts(資料,時間,格式)
+etf56.xts <- xts(etf56$price, order.by = as.Date(as.character(etf56$date), format = "%Y%m%d"))
 head(etf56.xts)
-colnames(etf56.xts) <- 'tw56'
+colnames(etf56.xts) <- 'price'
 head(etf56.xts)
 #
 data <- new.env()
 # Three imputs that you have to provide for backtesting:
 # 1. prices; 2. weight; 3. execution.price
-data$prices <- etf56.xts
+
+data$prices = data$weight = data$execution.price = etf56.xts
 data$weight <- data$prices * NA
 data$weight[] = 1
 data$execution.price <- data$prices
@@ -43,7 +45,7 @@ names(data)
 # Buy & Hold 
 models <- list()
 models$buy.hold = bt.run(data) 
-
+names(models$buy.hold)
 # you may turn off the timezone error message for just now
 # options('xts_check_TZ'=FALSE)
 
@@ -57,6 +59,7 @@ head(sma, md)
 head(data$prices, md)
 data$weight[] = NA
 data$weight[] = iif(data$prices >= sma, 1, 0)
+#if(條件,真,假)
 data$symbolnames <- 'tw56'
 head(data$weight, md)
 #names(data)
